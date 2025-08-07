@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REACT JS 50 MARKS TEST</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7fc;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Fixed Navbar */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #3f038f;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 24px;
+            z-index: 1000;
+        }
+
+        /* Timer styling under the navbar */
+        .timer {
+            text-align: right;
+            font-size: 18px;
+            margin: 20px 20px;
+            position: fixed;
+            top: 30px;
+            right: 0;
+            padding: 12px 24px;
+            background-color: #3f038f;
+            color: white;
+            border-radius: 10px;
+        }
+
+        /* Center the quiz container with padding */
+        .quiz-container {
+            padding: 20px;
+            margin: 0 auto;
+            width: 70%;
+            max-width: 900px;
+            margin-top: 100px;
+            /* Space for fixed navbar */
+        }
+
+        .question-container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            padding: 15px;
+        }
+
+        .question-container p {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .question-container input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        button {
+            background-color: #3f038f;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #5e0cbe;
+        }
+
+        .result-popup,
+        .answer-page {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            z-index: 999;
+            width: 80%;
+            max-width: 500px;
+            z-index: 1111111;
+        }
+
+        .result-popup h2,
+        .answer-page h2 {
+            margin-bottom: 20px;
+        }
+
+        .answer-page p {
+            text-align: left;
+            margin: 10px 0;
+            padding: 5px;
+            background-color: #f1f1f1;
+            border-radius: 5px;
+        }
+
+        .correct-answer {
+            color: #4caf50;
+        }
+
+        .incorrect-answer {
+            color: #f44336;
+        }
+
+        .highlight {
+            background-color: #ffeb3b;
+        }
+
+        .highlight-btn {
+            background-color: #ff5722;
+        }
+
+        .form-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .form-box {
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            width: 300px;
+            /* Set fixed width for form popup */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .form-box input {
+            margin-bottom: 10px;
+            padding: 8px;
+            width: 100%;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        .form-box button {
+            width: 100%;
+            padding: 10px;
+        }
+
+        .pie-chart-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 250px;
+            margin: 20px 0;
+        }
+
+        .result-info {
+            margin-bottom: 20px;
+        }
+
+        .score-percentage {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .time-taken {
+            font-size: 16px;
+            color: #555;
+        }
+
+        /* Adjusting for better positioning of the form */
+        .form-box input,
+        .form-box button {
+            margin: 5px 0;
+        }
+
+        .navbar {
+            width: 100%;
+            height: 100px;
+            background-color: #3f038f;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 100px;
+            box-sizing: border-box;
+
+        }
+
+        .navbar img {
+            height: 65%;
+        }
+
+        .navbar h1 {
+            color: white;
+        }
+
+        .navbar button {
+            background-color: white;
+            color: black;
+            font-weight: bolder;
+        }
+
+
+        @media only screen and (max-width:540px) {
+            .navbar {
+                height: 50px;
+                padding: 0 30px;
+            }
+
+            .navbar h1 {
+                font-size: 12px;
+            }
+
+            .navbar button {
+                padding: 5px 15px;
+            }
+        }
+
+        /* Scrollable Answer List */
+        .answers-list-container {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        /* Close button positioning */
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .hideBox {
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: rgba(0, 0, 0, 0.447);
+            z-index: 11;
+            display: none;
+
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="hideBox"></div>
+
+
+    <nav class="navbar"><img src="next-academy-logo.png" alt="">
+        <h1>REACT JS Test</h1> <button>50 Marks</button>
+    </nav>
+
+    <!-- Popup to collect student details -->
+    <div id="student-popup" class="form-container">
+        <div class="form-box">
+            <h2>Enter Your Details</h2>
+            <form id="student-form">
+                <input type="text" id="student-name" placeholder="Name" required>
+                <input type="text" id="student-roll" placeholder="Roll Number" required>
+                <button type="submit">Start Quiz</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Quiz Section -->
+    <div class="quiz-container" style="display:none;">
+
+        <!-- timer  -->
+        <div class="timer" id="timer">Time Left: 20:00</div>
+
+        <!-- Questions Attached in Bootstrap -->
+        <div id="quiz-content"></div>
+
+        <button onclick="submitQuiz()">Submit Quiz</button>
+    </div>
+
+    <!-- Result Popup -->
+    <div id="result-popup" class="result-popup">
+        <button class="course Name"> REACT JS (50 MARKS)</button>
+        <h2><span id="student-name-result"></span></h2>
+        <div class="result-info">
+            <p id="result-msg"></p>
+            <p class="score-percentage" id="score-percentage"></p>
+            <p class="time-taken" id="time-taken"></p>
+        </div>
+        <div class="pie-chart-container">
+            <canvas id="result-pie-chart"></canvas>
+        </div>
+        <button id="show-answers-btn" onclick="showAnswers()">Show Correct Answers</button>
+    </div>
+
+    <!-- Answer Review Page -->
+    <div id="answer-page" class="answer-page">
+        <button class="close-btn" onclick="closeAnswers()">Close</button>
+        <h2>Correct Answers</h2>
+        <div id="answers-list" class="answers-list-container"></div>
+    </div>
+
+
+    <script>
+        // Timer Setup
+        let timeLeft = 20 * 60; // 20 minutes in seconds
+        let timer;
+        let startTime;
+
+        function startTimer() {
+            startTime = Date.now();
+            timer = setInterval(() => {
+                timeLeft--;
+                let minutes = Math.floor(timeLeft / 60);
+                let seconds = timeLeft % 60;
+                document.getElementById("timer").textContent = `Time Left: ${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    alert("Time's up!");
+                    submitQuiz();
+                }
+            }, 1000);
+        }
+
+        // Dynamic Quiz Content
+        const questions = [
+    // Q1
+{
+  "question": "What is JSX in React?",
+  "options": ["A template engine", "A syntax extension for JavaScript", "A server-side library", "A CSS preprocessor"],
+  "correct": 1
+},
+// Q2
+{
+  "question": "Which hook is used to manage component state?",
+  "options": ["useEffect", "useState", "useContext", "useRef"],
+  "correct": 1
+},
+// Q3
+{
+  "question": "What does useEffect do?",
+  "options": ["Manages state", "Handles styling", "Performs side effects", "Defines routes"],
+  "correct": 2
+},
+// Q4
+{
+  "question": "Which hook is used to reference DOM elements?",
+  "options": ["useDOM", "useEffect", "useRef", "useState"],
+  "correct": 2
+},
+// Q5
+{
+  "question": "What does useContext help with?",
+  "options": ["Managing DOM", "Managing global state", "Fetching APIs", "Optimizing images"],
+  "correct": 1
+},
+// Q6
+{
+  "question": "Which package is used for routing in React?",
+  "options": ["react-router", "react-dom", "react-router-dom", "react-path"],
+  "correct": 2
+},
+// Q7
+{
+  "question": "Props are used to:",
+  "options": ["Send data from parent to child", "Store internal state", "Access APIs", "Bind events"],
+  "correct": 0
+},
+// Q8
+{
+  "question": "Which method is used for GET requests using axios?",
+  "options": ["axios.send()", "axios.get()", "axios.fetch()", "axios.query()"],
+  "correct": 1
+},
+// Q9
+{
+  "question": "useState returns:",
+  "options": ["A variable and a setter function", "A ref", "An array of objects", "A single value"],
+  "correct": 0
+},
+// Q10
+{
+  "question": "Which hook is used for side-effects in React?",
+  "options": ["useStyle", "useProps", "useRef", "useEffect"],
+  "correct": 3
+},
+// Q11
+{
+  "question": "In JSX, how do you add dynamic classes?",
+  "options": ["class", "className", "styleClass", "class-react"],
+  "correct": 1
+},
+// Q12
+{
+  "question": "Which keyword declares a constant in JavaScript?",
+  "options": ["let", "const", "var", "define"],
+  "correct": 1
+},
+// Q13
+{
+  "question": "Which operator is used to compare value and type?",
+  "options": ["==", "=", "===", "!="],
+  "correct": 2
+},
+// Q14
+{
+  "question": "Which method converts a string to integer?",
+  "options": ["parseFloat()", "parseInt()", "toInteger()", "Number()"],
+  "correct": 1
+},
+// Q15
+{
+  "question": "Which method removes last item from array?",
+  "options": ["pop()", "shift()", "remove()", "delete()"],
+  "correct": 0
+},
+// Q16
+{
+  "question": "Which method adds an item to the end of array?",
+  "options": ["push()", "pop()", "unshift()", "concat()"],
+  "correct": 0
+},
+// Q17
+{
+  "question": "Which event triggers on scroll?",
+  "options": ["onscroll", "onresize", "onslide", "onhover"],
+  "correct": 0
+},
+// Q18
+{
+  "question": "Which event triggers on window resize?",
+  "options": ["onscroll", "onresize", "onload", "onhover"],
+  "correct": 1
+},
+// Q19
+{
+  "question": "Which hook is best for theme toggle?",
+  "options": ["useEffect", "useState", "useRef", "useMemo"],
+  "correct": 1
+},
+// Q20
+{
+  "question": "Which prop uniquely identifies items in a list?",
+  "options": ["id", "class", "key", "index"],
+  "correct": 2
+},
+// Q21
+{
+  "question": "Which method is used to delay execution?",
+  "options": ["setTimeout()", "setInterval()", "delay()", "timeout()"],
+  "correct": 0
+},
+// Q22
+{
+  "question": "Which hook cleans up intervals?",
+  "options": ["useRef", "useState", "useEffect", "useMemo"],
+  "correct": 2
+},
+// Q23
+{
+  "question": "How to prevent default form submit?",
+  "options": ["e.prevent()", "e.stop()", "e.preventDefault()", "return false"],
+  "correct": 2
+},
+// Q24
+{
+  "question": "Which statement is correct for conditional rendering?",
+  "options": ["if-else", "ternary", "&&", "All of the above"],
+  "correct": 3
+},
+// Q25
+{
+  "question": "What is the purpose of the `key` prop in React lists?",
+  "options": ["To style list items", "To identify elements uniquely", "To reorder elements", "To pass data to parent"],
+  "correct": 1
+},
+// Q26
+{
+  "question": "Which hook is used for global theme management?",
+  "options": ["useState", "useRef", "useEffect", "useContext"],
+  "correct": 3
+},
+// Q27
+{
+  "question": "How many values does useState return?",
+  "options": ["1", "2", "3", "4"],
+  "correct": 1
+},
+// Q28
+{
+  "question": "How do you loop through an array in JSX?",
+  "options": [".forEach", ".loop", ".map", ".render"],
+  "correct": 2
+},
+// Q29
+{
+  "question": "Which method fetches data from a public API?",
+  "options": ["axios.get()", "useEffect()", "useState()", "useApi()"],
+  "correct": 0
+},
+// Q30
+{
+  "question": "Which React hook should you not call conditionally?",
+  "options": ["useState", "useEffect", "useContext", "All of the above"],
+  "correct": 3
+},
+// Q31
+{
+  "question": "What does 'lifting state up' mean?",
+  "options": ["Passing state to parent", "Global context", "Redux", "Props drilling"],
+  "correct": 0
+},
+// Q32
+{
+  "question": "Which event captures typing in input field?",
+  "options": ["onChange", "onClick", "onInput", "onType"],
+  "correct": 0
+},
+// Q33
+{
+  "question": "React uses which rendering approach?",
+  "options": ["Virtual DOM", "Real DOM", "Static DOM", "Client DOM"],
+  "correct": 0
+},
+// Q34
+{
+  "question": "Which JavaScript method is used to slice arrays?",
+  "options": ["cut()", "splice()", "slice()", "split()"],
+  "correct": 2
+},
+// Q35
+{
+  "question": "Which operator is used in switch-case?",
+  "options": ["==", "=>", "switch()", "case"],
+  "correct": 3
+},
+// Q36
+{
+  "question": "Which keyword is used to export components?",
+  "options": ["export", "return", "define", "component"],
+  "correct": 0
+},
+// Q37
+{
+  "question": "How many components can you return from React function?",
+  "options": ["One", "Two", "As many as you want", "Only JSX"],
+  "correct": 2
+},
+// Q38
+{
+  "question": "What is the default prop direction?",
+  "options": ["child to parent", "parent to child", "sibling to sibling", "global"],
+  "correct": 1
+},
+// Q39
+{
+  "question": "Which React tool inspects hooks and state?",
+  "options": ["React DevTools", "Redux DevTools", "DOM Viewer", "DebugJS"],
+  "correct": 0
+},
+// Q40
+{
+  "question": "React can be used with which language?",
+  "options": ["Python", "C++", "JavaScript", "Java"],
+  "correct": 2
+},
+// Q41
+{
+  "question": "How to initialize context value?",
+  "options": ["Provider value={...}", "useContext()", "Context()()", "value={...}"],
+  "correct": 0
+},
+// Q42
+{
+  "question": "Which attribute is used to apply inline styles in JSX?",
+  "options": ["style", "styles", "css", "classStyle"],
+  "correct": 0
+},
+// Q43
+{
+  "question": "Which of these is not a hook?",
+  "options": ["useState", "useEffect", "useProps", "useContext"],
+  "correct": 2
+},
+// Q44
+{
+  "question": "What does useRef().current hold?",
+  "options": ["DOM node", "Previous value", "Timeout ID", "All of the above"],
+  "correct": 3
+},
+// Q45
+{
+  "question": "Which tag links to another page in React Router?",
+  "options": ["a", "button", "Link", "RouterLink"],
+  "correct": 2
+},
+// Q46
+{
+  "question": "React project can be initialized using?",
+  "options": ["create-react-app", "react-init", "vite-react", "webpack-react"],
+  "correct": 0
+},
+// Q47
+{
+  "question": "How to fetch top 5 items from API response?",
+  "options": ["data.slice(0, 5)", "data.map(5)", "data.limit(5)", "data.first(5)"],
+  "correct": 0
+},
+// Q48
+{
+  "question": "Which function lets you access state from input?",
+  "options": ["onInput", "onChange", "useState", "handleChange"],
+  "correct": 1
+},
+// Q49
+{
+  "question": "Which statement adds styling to React components?",
+  "options": ["class", "id", "className", "styleClass"],
+  "correct": 2
+},
+// Q50
+{
+  "question": "Which lifecycle hook is used for API calls?",
+  "options": ["useRef", "useEffect", "useState", "useCallback"],
+  "correct": 1
+}
+];
+
+        // Load Quiz Again
+        function loadQuiz() {
+            const quizContent = document.getElementById("quiz-content");
+            quizContent.innerHTML = ""; // Clear previous questions
+            questions.forEach((q, index) => {
+                let questionHTML = `
+                    <div class="question-container">
+                        <p>${index + 1}. ${q.question}</p>
+                        ${q.options.map((option, i) =>
+                    `<input type="radio" name="q${index}" value="${i}" id="q${index}-opt${i}"> 
+                            <label for="q${index}-opt${i}">${option}</label><br>`).join('')}
+                    </div>`;
+                quizContent.innerHTML += questionHTML;
+            });
+        }
+
+        let answers = [];
+
+        function submitQuiz() {
+            const button = document.getElementById("show-answers-btn");
+            button.disabled = true;
+            button.innerText = "Please wait...";
+
+            // Re-enable after 60 seconds (60000 ms)
+            setTimeout(() => {
+                button.disabled = false;
+                button.innerText = "Show Answers";
+            }, 60000);
+
+            clearInterval(timer);
+            let score = 0;
+            answers = [];
+            questions.forEach((q, index) => {
+                const selectedAnswer = document.querySelector(`input[name="q${index}"]:checked`);
+                const correctAnswer = q.correct;
+                const userAnswer = selectedAnswer ? parseInt(selectedAnswer.value) : null;
+                let hiddenBox = document.querySelector('.hideBox');
+
+                hiddenBox.style.display = "flex";
+                answers.push({
+                    question: q.question,
+                    options: q.options,
+                    correctAnswer: q.options[correctAnswer],
+                    selectedAnswer: userAnswer !== null ? q.options[userAnswer] : 'None',
+                    isCorrect: userAnswer === correctAnswer
+                });
+                if (userAnswer === correctAnswer) score++;
+
+            });
+
+            const totalQuestions = questions.length;
+            const percentage = Math.round((score / totalQuestions) * 100);
+
+            // Calculate the time taken in minutes and seconds
+            const elapsedTimeInSeconds = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsedTimeInSeconds / 60);
+            const seconds = elapsedTimeInSeconds % 60;
+
+            // Displaying results
+            document.getElementById("student-name-result").textContent = document.getElementById("student-name").value;
+            document.getElementById("result-msg").textContent = `You answered ${score} out of ${totalQuestions} questions correctly.`;
+            document.getElementById("score-percentage").textContent = `Your score: ${percentage}%`;
+            document.getElementById("time-taken").textContent = `Time taken: ${minutes} minutes ${seconds} seconds`;
+
+            // Displaying the Pie Chart
+            const ctx = document.getElementById('result-pie-chart').getContext('2d');
+            const resultPieChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Correct', 'Incorrect'],
+                    datasets: [{
+                        label: 'Quiz Result',
+                        data: [score, totalQuestions - score],
+                        backgroundColor: ['#4caf50', '#f44336'],
+                    }]
+                }
+            });
+
+            // Show the result popup
+            document.getElementById("result-popup").style.display = 'block';
+        }
+
+        function showAnswers() {
+
+
+
+            const answersList = document.getElementById("answers-list");
+            answersList.innerHTML = '';
+            answers.forEach((answer, index) => {
+                const isCorrectClass = answer.isCorrect ? 'correct-answer' : 'incorrect-answer';
+                answersList.innerHTML += `
+                    <p>${index + 1}. ${answer.question}
+                        <br><strong>Correct Answer:</strong> <span class="${isCorrectClass}">${answer.correctAnswer}</span>
+                        <br><strong>Your Answer:</strong> <span class="${isCorrectClass}">${answer.selectedAnswer}</span>
+                    </p>`;
+            });
+            document.getElementById("answer-page").style.display = 'block';
+
+
+        }
+
+        function closeAnswers() {
+            document.getElementById("answer-page").style.display = 'none';
+        }
+
+        // Show student form popup at the start
+        document.getElementById("student-popup").style.display = 'block';
+
+        // Start the quiz when student form is submitted
+        document.getElementById("student-form").addEventListener("submit", function (e) {
+            e.preventDefault();
+            document.getElementById("student-popup").style.display = 'none';
+            document.querySelector(".quiz-container").style.display = 'block';
+            startTimer();
+            loadQuiz();
+        });
+
+
+    </script>
+    <script>
+        // Disable right-click
+        document.addEventListener('contextmenu', (e) => e.preventDefault());
+
+        // Block keys like F12, Ctrl+Shift+I, etc.
+        document.addEventListener('keydown', (e) => {
+            if (
+                e.key === "F12" || // Dev tools
+                (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "i") || // Ctrl+Shift+I
+                (e.ctrlKey && e.key.toLowerCase() === "u") // View Source
+            ) {
+                e.preventDefault();
+            }
+        });
+    </script>
+
+</body>
+
+</html>
